@@ -95,7 +95,7 @@ export const SessionList = () => (
 );
 
 export const SessionEdit = () => (
-  <Edit title="Modifier la session">
+  <Edit title="Modifier la session" mutationMode="pessimistic">
     <SimpleForm>
       <TextInput source="title" label="Titre" fullWidth required />
       <TextInput source="description" label="Description" multiline rows={3} fullWidth />

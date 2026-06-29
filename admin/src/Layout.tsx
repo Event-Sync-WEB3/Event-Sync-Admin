@@ -3,7 +3,6 @@ import {
   Layout as RALayout,
   CheckForApplicationUpdate,
   Menu,
-  usePermissions,
 } from "react-admin";
 import EventIcon from "@mui/icons-material/Event";
 import PeopleIcon from "@mui/icons-material/People";

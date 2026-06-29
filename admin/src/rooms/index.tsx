@@ -31,7 +31,7 @@ export const RoomList = () => (
 );
 
 export const RoomEdit = () => (
-  <Edit title="Modifier la salle">
+  <Edit title="Modifier la salle" mutationMode="pessimistic">
     <SimpleForm>
       <TextInput source="name" label="Nom de la salle" fullWidth required />
     </SimpleForm>

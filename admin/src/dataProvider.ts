@@ -11,9 +11,13 @@ export const dataProvider = {
   // ─── getList ──────────────────────────────────────────────────
   getList: async (resource: string, params: any) => {
     const { page, perPage } = params.pagination || { page: 1, perPage: 10 };
-    const response = await httpClient(
-      `${API_URL}/api/${resource}?page=${page}&limit=${perPage}`
-    );
+    const filter = params.filter || {};
+    const filterStr = Object.entries(filter)
+      .filter(([, v]) => v !== "" && v !== undefined && v !== null)
+      .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(String(v))}`)
+      .join("&");
+    const url = `${API_URL}/api/${resource}?page=${page}&limit=${perPage}${filterStr ? `&${filterStr}` : ""}`;
+    const response = await httpClient(url);
     const total = response.headers.get("X-Total-Count") || "0";
     const json = await response.json();
     const data = Array.isArray(json) ? json : json.data || [];

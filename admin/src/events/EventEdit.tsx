@@ -1,7 +1,7 @@
 import { Edit, SimpleForm, TextInput, DateTimeInput } from "react-admin";
 
 export const EventEdit = () => (
-  <Edit title="Modifier l'événement">
+  <Edit title="Modifier l'événement" mutationMode="pessimistic">
     <SimpleForm>
       <TextInput source="title" label="Titre" fullWidth required />
       <TextInput
