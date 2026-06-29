@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   List,
   Datagrid,
@@ -9,6 +9,8 @@ import {
   SimpleForm,
   TextInput,
   Create,
+  ReferenceInput,
+  SelectInput,
   SearchInput,
   useRecordContext,
   FunctionField,
@@ -213,7 +215,9 @@ export const SpeakerCreate = () => {
         <TextInput source="slug" label="Slug (URL)" fullWidth required helperText="Identifiant unique, ex: jean-dupont" />
         <TextInput source="bio" label="Biographie" multiline rows={4} fullWidth />
         <TextInput source="photoUrl" label="URL de la photo de profil" fullWidth />
-        <TextInput source="eventId" label="ID de l'événement" fullWidth required />
+        <ReferenceInput source="eventId" reference="events" required>
+          <SelectInput optionText="title" label="Événement" fullWidth />
+        </ReferenceInput>
         <LinkEditor links={links} setLinks={setLinks} />
       </SimpleForm>
     </Create>
@@ -256,20 +260,21 @@ function LinksEditSection({
   setLinks: (l: SpeakerLink[]) => void;
 }) {
   const record = useRecordContext();
+
+  useEffect(() => {
+    if (record?.links) {
+      setLinks(
+        (record.links as any[]).map((l: any) => ({
+          platform: l.platform || "website",
+          label: l.label || "",
+          url: l.url || "",
+        }))
+      );
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [record?.id]);
+
   if (!record) return null;
 
-  // Initialize links from record on first render
-  const currentLinks: SpeakerLink[] =
-    links !== null ? links : (record.links || []).map((l: any) => ({
-      platform: l.platform || "website",
-      label: l.label || "",
-      url: l.url || "",
-    }));
-
-  if (links === null && record.links) {
-    // Defer to avoid render issues
-    setTimeout(() => setLinks(currentLinks), 0);
-  }
-
-  return <LinkEditor links={currentLinks} setLinks={setLinks} />;
+  return <LinkEditor links={links ?? []} setLinks={setLinks} />;
 }

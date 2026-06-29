@@ -1,19 +1,4 @@
-import {
-  Edit,
-  SimpleForm,
-  TextInput,
-  DateTimeInput,
-  TabbedForm,
-  useRecordContext,
-  ReferenceManyField,
-  Datagrid,
-  TextField,
-  DateField,
-  EditButton,
-  DeleteButton,
-  CreateButton,
-  TopToolbar,
-} from "react-admin";
+import { Edit, SimpleForm, TextInput, DateTimeInput } from "react-admin";
 
 export const EventEdit = () => (
   <Edit title="Modifier l'événement">

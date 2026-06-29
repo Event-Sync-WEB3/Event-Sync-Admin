@@ -11,7 +11,6 @@ import {
   ReferenceInput,
   SelectInput,
   SearchInput,
-  FunctionField,
 } from "react-admin";
 
 const filters = [<SearchInput key="q" source="q" alwaysOn />];
@@ -42,7 +41,9 @@ export const RoomEdit = () => (
 export const RoomCreate = () => (
   <Create title="Créer une salle">
     <SimpleForm>
-      <TextInput source="eventId" label="ID de l'événement" fullWidth required />
+      <ReferenceInput source="eventId" reference="events" required>
+        <SelectInput optionText="title" label="Événement" fullWidth />
+      </ReferenceInput>
       <TextInput source="name" label="Nom de la salle" fullWidth required />
     </SimpleForm>
   </Create>

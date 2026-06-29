@@ -1,5 +1,3 @@
-import simpleRestProvider from "ra-data-simple-rest";
-
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
 
 const httpClient = (url: string, options: RequestInit = {}) => {
@@ -9,18 +7,7 @@ const httpClient = (url: string, options: RequestInit = {}) => {
   return fetch(url, { ...options, headers });
 };
 
-// Helper: find event slug by id
-const getEventSlug = async (id: any): Promise<string> => {
-  const listRes = await httpClient(`${API_URL}/api/events?page=1&limit=100`);
-  const listJson = await listRes.json();
-  const items = Array.isArray(listJson) ? listJson : listJson.data || [];
-  const item = items.find((i: any) => i.id === id);
-  return item?.slug || id;
-};
-
 export const dataProvider = {
-  ...simpleRestProvider(API_URL + "/api", httpClient),
-
   // ─── getList ──────────────────────────────────────────────────
   getList: async (resource: string, params: any) => {
     const { page, perPage } = params.pagination || { page: 1, perPage: 10 };
@@ -35,14 +22,10 @@ export const dataProvider = {
 
   // ─── getOne ───────────────────────────────────────────────────
   getOne: async (resource: string, params: any) => {
-    if (resource === "events") {
-      const slug = await getEventSlug(params.id);
-      const res = await httpClient(`${API_URL}/api/events/${slug}`);
-      const json = await res.json();
-      const item = json.data || json;
-      return { data: { ...item, id: item.id || params.id } };
-    }
-    const res = await httpClient(`${API_URL}/api/${resource}/${params.id}`);
+    const url = resource === "events"
+      ? `${API_URL}/api/events/id/${params.id}`
+      : `${API_URL}/api/${resource}/${params.id}`;
+    const res = await httpClient(url);
     const json = await res.json();
     const item = json.data || json;
     return { data: { ...item, id: item.id || params.id } };
@@ -52,7 +35,10 @@ export const dataProvider = {
   getMany: async (resource: string, params: any) => {
     const results = await Promise.all(
       params.ids.map(async (id: any) => {
-        const res = await httpClient(`${API_URL}/api/${resource}/${id}`);
+        const url = resource === "events"
+          ? `${API_URL}/api/events/id/${id}`
+          : `${API_URL}/api/${resource}/${id}`;
+        const res = await httpClient(url);
         const json = await res.json();
         const item = json.data || json;
         return { ...item, id: item.id || id };
@@ -61,9 +47,21 @@ export const dataProvider = {
     return { data: results };
   },
 
+  // ─── getManyReference ─────────────────────────────────────────
+  getManyReference: async (resource: string, params: any) => {
+    const { page, perPage } = params.pagination || { page: 1, perPage: 10 };
+    const response = await httpClient(
+      `${API_URL}/api/${resource}?${params.target}=${params.id}&page=${page}&limit=${perPage}`
+    );
+    const total = response.headers.get("X-Total-Count") || "0";
+    const json = await response.json();
+    const data = Array.isArray(json) ? json : json.data || [];
+    return { data, total: parseInt(total, 10) };
+  },
+
   // ─── create ───────────────────────────────────────────────────
   create: async (resource: string, params: any) => {
-    // Full event creation (with rooms, speakers, sessions)
+    // Création complète (événement + salles + intervenants + sessions)
     if (
       resource === "events" &&
       (params.data.rooms || params.data.speakers || params.data.sessions)
@@ -88,11 +86,10 @@ export const dataProvider = {
 
   // ─── update ───────────────────────────────────────────────────
   update: async (resource: string, params: any) => {
-    let updateId = params.id;
-    if (resource === "events") {
-      updateId = await getEventSlug(params.id);
-    }
-    const res = await httpClient(`${API_URL}/api/${resource}/${updateId}`, {
+    const url = resource === "events"
+      ? `${API_URL}/api/events/id/${params.id}`
+      : `${API_URL}/api/${resource}/${params.id}`;
+    const res = await httpClient(url, {
       method: "PUT",
       body: JSON.stringify(params.data),
       headers: new Headers({ "Content-Type": "application/json" }),
@@ -102,24 +99,38 @@ export const dataProvider = {
     return { data: { ...item, id: item.id || params.id } };
   },
 
+  // ─── updateMany ───────────────────────────────────────────────
+  updateMany: async (resource: string, params: any) => {
+    await Promise.all(
+      params.ids.map((id: any) =>
+        httpClient(`${API_URL}/api/${resource}/${id}`, {
+          method: "PUT",
+          body: JSON.stringify(params.data),
+          headers: new Headers({ "Content-Type": "application/json" }),
+        })
+      )
+    );
+    return { data: params.ids };
+  },
+
   // ─── delete ───────────────────────────────────────────────────
   delete: async (resource: string, params: any) => {
-    let deleteId = params.id;
-    if (resource === "events") {
-      deleteId = await getEventSlug(params.id);
-    }
-    await httpClient(`${API_URL}/api/${resource}/${deleteId}`, {
-      method: "DELETE",
-    });
+    const url = resource === "events"
+      ? `${API_URL}/api/events/id/${params.id}`
+      : `${API_URL}/api/${resource}/${params.id}`;
+    await httpClient(url, { method: "DELETE" });
     return { data: params.previousData };
   },
 
   // ─── deleteMany ───────────────────────────────────────────────
   deleteMany: async (resource: string, params: any) => {
     await Promise.all(
-      params.ids.map((id: any) =>
-        httpClient(`${API_URL}/api/${resource}/${id}`, { method: "DELETE" })
-      )
+      params.ids.map((id: any) => {
+        const url = resource === "events"
+          ? `${API_URL}/api/events/id/${id}`
+          : `${API_URL}/api/${resource}/${id}`;
+        return httpClient(url, { method: "DELETE" });
+      })
     );
     return { data: params.ids };
   },

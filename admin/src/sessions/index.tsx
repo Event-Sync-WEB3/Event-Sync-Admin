@@ -14,10 +14,6 @@ import {
   SelectInput,
   Create,
   SearchInput,
-  ArrayInput,
-  SimpleFormIterator,
-  ReferenceArrayInput,
-  AutocompleteArrayInput,
   FunctionField,
   useRecordContext,
 } from "react-admin";

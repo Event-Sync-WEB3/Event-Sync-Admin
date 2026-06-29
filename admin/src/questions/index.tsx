@@ -1,4 +1,3 @@
-import { useEffect, useState } from "react";
 import {
   List,
   Datagrid,
@@ -8,8 +7,6 @@ import {
   DeleteButton,
   FunctionField,
   SearchInput,
-  useDataProvider,
-  Title,
 } from "react-admin";
 
 const filters = [<SearchInput key="q" source="q" alwaysOn />];
