@@ -16,7 +16,12 @@ import {
   FunctionField,
 } from "react-admin";
 
-const filters = [<SearchInput key="q" source="q" alwaysOn />];
+const filters = [
+  <SearchInput key="q" source="q" alwaysOn />,
+  <ReferenceInput key="eventId" source="eventId" reference="events" label="Événement">
+    <SelectInput optionText="title" />
+  </ReferenceInput>,
+];
 
 // Avatar small
 const AvatarField = () => {
